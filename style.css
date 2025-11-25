@@ -1,0 +1,157 @@
+/* Custom Variables based on nar8tive/tailwind.config.js and index.css */
+:root {
+  --accent: #2a6f73;
+  --accent-light: #3d8c91;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --bg-secondary: #f7f7f7;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  color: var(--text-primary);
+  padding-top: 76px; /* Offset for fixed header */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-family: "Playfair Display", serif;
+}
+
+.font-script {
+  font-family: "Caveat", cursive;
+}
+
+.text-accent {
+  color: var(--accent) !important;
+}
+
+.bg-light-gray {
+  background-color: var(--bg-secondary);
+}
+
+/* Buttons */
+.btn-primary-custom {
+  background-color: var(--accent);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.25rem;
+  font-weight: 600;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-primary-custom:hover {
+  background-color: var(--accent-light);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary-custom {
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  background: transparent;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.25rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary-custom:hover {
+  background-color: var(--accent);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Section Title Underline */
+.section-title {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 2rem;
+}
+
+.section-title::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background-color: var(--accent);
+}
+
+.section-title.centered::after {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Navbar */
+.navbar {
+  transition: all 0.3s ease;
+}
+
+.nav-link.active {
+  color: var(--accent) !important;
+}
+
+.nav-link:hover {
+  color: var(--accent);
+}
+
+/* Service Cards */
+.service-card {
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Portfolio */
+.portfolio-item {
+  overflow: hidden;
+  position: relative;
+}
+
+.portfolio-item img {
+  transition: transform 0.5s ease;
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+
+.portfolio-item:hover img {
+  transform: scale(1.05);
+}
+
+.portfolio-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(42, 111, 115, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.portfolio-item:hover .portfolio-overlay {
+  opacity: 1;
+}
+
+/* Abstract Hero Shapes */
+.hero-shape {
+  position: absolute;
+  z-index: -1;
+  opacity: 0.1;
+}
