@@ -1,10 +1,5 @@
 ---
 deployment:
   tasks:
-    - /bin/cp -R index.html /home/oyqavpki/public_html/
-    - /bin/cp -R style.css /home/oyqavpki/public_html/
-    - /bin/cp -R script.js /home/oyqavpki/public_html/
-    - /bin/cp -R assets /home/oyqavpki/public_html/
-    - /bin/cp -R send_email.php /home/oyqavpki/public_html/
-    - /bin/cp -R vendor /home/oyqavpki/public_html/
-    - /bin/cp -R composer.json /home/oyqavpki/public_html/
+    - /bin/cp -R * /home/oyqavpki/public_html/
+    - /bin/cp .htaccess /home/oyqavpki/public_html/
