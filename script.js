@@ -55,8 +55,9 @@
 
     let lastScrollTop = 0;
     let scrollThreshold = 100;
+    let ticking = false;
 
-    window.addEventListener("scroll", () => {
+    const updateNavbar = () => {
       const scrollTop =
         window.pageYOffset || document.documentElement.scrollTop;
 
@@ -70,19 +71,24 @@
       // Hide/show navbar on scroll (only on desktop)
       if (window.innerWidth > 991) {
         if (scrollTop > lastScrollTop && scrollTop > scrollThreshold) {
-          // Scrolling down
           navbar.style.transform = "translateY(-100%)";
         } else {
-          // Scrolling up
           navbar.style.transform = "translateY(0)";
         }
       } else {
-        // Always show on mobile
         navbar.style.transform = "translateY(0)";
       }
 
       lastScrollTop = scrollTop;
-    });
+      ticking = false;
+    };
+
+    window.addEventListener("scroll", () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateNavbar);
+        ticking = true;
+      }
+    }, { passive: true });
   };
 
   // ==========================================
@@ -91,8 +97,9 @@
   const highlightActiveNav = () => {
     const sections = document.querySelectorAll("section[id]");
     const navLinks = document.querySelectorAll(".navbar-nav .nav-link");
+    let ticking = false;
 
-    window.addEventListener("scroll", () => {
+    const updateActiveNav = () => {
       let current = "";
       const scrollPos = window.pageYOffset + 150;
 
@@ -111,7 +118,15 @@
           link.classList.add("active");
         }
       });
-    });
+      ticking = false;
+    };
+
+    window.addEventListener("scroll", () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateActiveNav);
+        ticking = true;
+      }
+    }, { passive: true });
   };
 
   // ==========================================
@@ -202,7 +217,7 @@
         });
         ticking = true;
       }
-    });
+    }, { passive: true });
     
     // Initial fade
     fadeSection();
@@ -406,14 +421,23 @@
     const hero = document.querySelector("#hero");
     if (!hero) return;
 
-    window.addEventListener("scroll", () => {
+    let ticking = false;
+    const updateParallax = () => {
       const scrolled = window.pageYOffset;
       const parallaxSpeed = 0.5;
 
       if (scrolled < window.innerHeight) {
         hero.style.transform = `translateY(${scrolled * parallaxSpeed}px)`;
       }
-    });
+      ticking = false;
+    };
+
+    window.addEventListener("scroll", () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateParallax);
+        ticking = true;
+      }
+    }, { passive: true });
   };
 
   // ==========================================
