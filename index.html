@@ -50,8 +50,11 @@
     </header>
 
     <section id="hero" class="d-flex align-items-center position-relative overflow-hidden" style="min-height: 90vh;">
-        <div class="hero-shape rounded-circle border border-secondary" style="width: 300px; height: 300px; bottom: 10%; left: 30%;"></div>
-        <div class="hero-shape rounded-circle border border-info" style="width: 200px; height: 200px; top: 10%; right: 10%;"></div>
+        <!-- Background Image -->
+        <div class="hero-background"></div>
+        
+        <!-- Gradient Overlay for text readability -->
+        <div class="hero-overlay"></div>
 
         <div class="container position-relative z-1">
             <div class="row">
@@ -238,7 +241,7 @@
                 <div class="col-lg-6">
                     <div class="position-relative">
                         <div class="rounded overflow-hidden shadow-lg ratio ratio-1x1 bg-secondary">
-                            <img src="https://images.unsplash.com/photo-1588075592446-265fd1e6e76f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Team at work" class="object-fit-cover">
+                            <img src="assets/about-team.jpg" alt="Team at work" class="object-fit-cover">
                         </div>
                         <div class="position-absolute bg-white p-4 rounded shadow start-0 bottom-0 translate-middle-y ms-n4 mb-n5" style="width: 70%; bottom: -30px; left: -20px;">
                             <p class="font-script text-accent fs-4 mb-1">Our Mission</p>
@@ -261,22 +264,22 @@
                 <i class="bi bi-quote text-accent opacity-25 display-1 position-absolute top-0 start-0 ms-3 mt-1"></i>
                 <div class="carousel-inner">
                     <div class="carousel-item active">
-                        <p class="fs-4 fst-italic mb-4 position-relative z-1">"The commercial script they wrote for our product launch exceeded all expectations. Sales increased by 40% in the first month alone."</p>
+                        <p class="fs-4 fst-italic mb-4 position-relative z-1">"The commercial script they wrote for our product launch exceeded all expectations. We saw a 40% increase in engagement across Lagos in the first month alone."</p>
                         <div class="d-flex justify-content-center align-items-center gap-3">
-                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&h=100&q=80" class="rounded-circle border border-2 border-white shadow-sm" width="60" height="60" alt="Sarah">
+                            <img src="https://images.unsplash.com/photo-1531123414780-f74242c2b052?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&h=100&q=80" class="rounded-circle border border-2 border-white shadow-sm" width="60" height="60" alt="Funke">
                             <div class="text-start">
-                                <div class="fw-bold">Sarah Johnson</div>
-                                <div class="small text-muted">Marketing Director, TechVision Inc.</div>
+                                <div class="fw-bold">Funke Adeyemi</div>
+                                <div class="small text-muted">Marketing Director, Lagos Tech Hub</div>
                             </div>
                         </div>
                     </div>
                     <div class="carousel-item">
-                        <p class="fs-4 fst-italic mb-4 position-relative z-1">"Their screenplay brought our concept to life in ways we couldn't have imagined. The dialogue was crisp, authentic, and exactly what we needed."</p>
+                        <p class="fs-4 fst-italic mb-4 position-relative z-1">"Their screenplay brought our story to life with such authenticity. The dialogue was crisp, culturally relevant, and exactly what our Nollywood audience loves."</p>
                         <div class="d-flex justify-content-center align-items-center gap-3">
-                            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&h=100&q=80" class="rounded-circle border border-2 border-white shadow-sm" width="60" height="60" alt="Michael">
+                            <img src="https://images.unsplash.com/photo-1572561300743-2dd367ed0c9a?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&h=100&q=80" class="rounded-circle border border-2 border-white shadow-sm" width="60" height="60" alt="Emeka">
                             <div class="text-start">
-                                <div class="fw-bold">Michael Chen</div>
-                                <div class="small text-muted">Independent Filmmaker</div>
+                                <div class="fw-bold">Emeka Okafor</div>
+                                <div class="small text-muted">Film Producer, Urban Vision Nigeria</div>
                             </div>
                         </div>
                     </div>
@@ -330,29 +333,30 @@
                 <div class="col-lg-7">
                     <div class="bg-white p-4 p-md-5 rounded shadow-sm">
                         <h3 class="h4 fw-bold mb-4">Request a Project</h3>
-                        <form>
+                        <form id="contactForm" method="POST" action="send_email.php">
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold">Your Name</label>
-                                    <input type="text" class="form-control p-3" placeholder="John Doe">
+                                    <input type="text" name="name" class="form-control p-3" placeholder="John Doe" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label small fw-bold">Your Email</label>
-                                    <input type="email" class="form-control p-3" placeholder="john@example.com">
+                                    <input type="email" name="email" class="form-control p-3" placeholder="john@example.com" required>
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label small fw-bold">Project Type</label>
-                                <select class="form-select p-3">
+                                <select name="project_type" class="form-select p-3" required>
                                     <option selected disabled>Select project type</option>
                                     <option value="commercial">Commercial Writing</option>
                                     <option value="screenplay">Screenplay Creation</option>
                                     <option value="webinar">Webinar Planning</option>
+                                    <option value="sales_script">Sales Scripts</option>
                                 </select>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label small fw-bold">Project Description</label>
-                                <textarea class="form-control p-3" rows="4" placeholder="Tell us about your project..."></textarea>
+                                <textarea name="description" class="form-control p-3" rows="4" placeholder="Tell us about your project..." required></textarea>
                             </div>
                             <button type="submit" class="btn btn-primary-custom w-100 py-3">Submit Request</button>
                         </form>
@@ -397,7 +401,7 @@
                 <div class="col-lg-4">
                     <h4 class="h6 fw-bold mb-3">Contact Us</h4>
                     <ul class="list-unstyled text-secondary small">
-                        <li class="mb-1">123 Writing Lane</li>
+                        <!--<li class="mb-1">123 Writing Lane</li>-->
                         <li class="mb-1">12a Chief Charles MBA, Lagos</li>
                         <li class="mb-1">nr8ivafrica@gmail.com</li>
                     </ul>

@@ -1,15 +1,17 @@
 /* Custom Variables based on nar8tive/tailwind.config.js and index.css */
 :root {
-  --accent: #2a6f73;
-  --accent-light: #3d8c91;
+  --accent: #2d8b84;
+  --accent-light: #3da59d;
   --text-primary: #333333;
   --text-secondary: #666666;
-  --bg-secondary: #f7f7f7;
+  --bg-primary: #fdfbf7;
+  --bg-secondary: #f5f1eb;
 }
 
 body {
   font-family: "Inter", sans-serif;
   color: var(--text-primary);
+  background-color: var(--bg-primary);
   padding-top: 76px; /* Offset for fixed header */
 }
 
@@ -249,11 +251,64 @@ section::before {
   opacity: 1;
 }
 
-/* Abstract Hero Shapes */
+/* Hero Background */
+#hero {
+  position: relative;
+}
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('assets/hero-bg-cinematic.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
+.hero-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    135deg,
+    rgba(10, 15, 20, 0.9) 0%,
+    rgba(10, 15, 20, 0.7) 40%,
+    rgba(10, 15, 20, 0.5) 100%
+  );
+  z-index: 1;
+}
+
+#hero .container {
+  position: relative;
+  z-index: 2;
+}
+
+#hero h1,
+#hero .lead,
+#hero .font-script {
+  color: white;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+#hero .text-secondary {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+#hero .text-accent {
+  color: #5edcd1 !important; /* Lighter teal for dark background */
+}
+
+/* Abstract Hero Shapes - Keep for fallback */
 .hero-shape {
   position: absolute;
   z-index: -1;
-  opacity: 0.1;
+  opacity: 0.05;
 }
 
 /* ===================================

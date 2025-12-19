@@ -212,18 +212,18 @@
   // FORM VALIDATION & ENHANCEMENT
   // ==========================================
   const formEnhancement = () => {
-    const form = document.querySelector("#contact form");
+    const form = document.querySelector("#contactForm");
     if (!form) return;
 
     // Add custom validation
-    form.addEventListener("submit", function (e) {
+    form.addEventListener("submit", async function (e) {
       e.preventDefault();
 
       // Get form elements
-      const name = form.querySelector('input[type="text"]');
-      const email = form.querySelector('input[type="email"]');
-      const projectType = form.querySelector("select");
-      const description = form.querySelector("textarea");
+      const name = form.querySelector('input[name="name"]');
+      const email = form.querySelector('input[name="email"]');
+      const projectType = form.querySelector('select[name="project_type"]');
+      const description = form.querySelector('textarea[name="description"]');
       const submitBtn = form.querySelector('button[type="submit"]');
 
       // Basic validation
@@ -264,22 +264,49 @@
           '<i class="bi bi-hourglass-split"></i> Sending...';
         submitBtn.disabled = true;
 
-        // Simulate form submission (replace with actual submission)
-        setTimeout(() => {
-          form.reset();
-          submitBtn.innerHTML =
-            '<i class="bi bi-check-circle"></i> Sent Successfully!';
-          submitBtn.classList.remove("btn-primary-custom");
-          submitBtn.classList.add("btn-success");
+        try {
+          // Prepare form data
+          const formData = new FormData(form);
 
-          // Reset button after 3 seconds
-          setTimeout(() => {
+          // Submit form via AJAX
+          const response = await fetch('send_email.php', {
+            method: 'POST',
+            body: formData
+          });
+
+          const result = await response.json();
+
+          if (result.success) {
+            // Success state
+            form.reset();
+            submitBtn.innerHTML =
+              '<i class="bi bi-check-circle"></i> Sent Successfully!';
+            submitBtn.classList.remove("btn-primary-custom");
+            submitBtn.classList.add("btn-success");
+
+            // Show success alert
+            showAlert('success', result.message || 'Thank you for your message! We will get back to you soon.');
+
+            // Reset button after 3 seconds
+            setTimeout(() => {
+              submitBtn.innerHTML = originalText;
+              submitBtn.classList.remove("btn-success");
+              submitBtn.classList.add("btn-primary-custom");
+              submitBtn.disabled = false;
+            }, 3000);
+          } else {
+            // Error state
             submitBtn.innerHTML = originalText;
-            submitBtn.classList.remove("btn-success");
-            submitBtn.classList.add("btn-primary-custom");
             submitBtn.disabled = false;
-          }, 3000);
-        }, 1500);
+            showAlert('error', result.message || 'Sorry, there was an error sending your message. Please try again.');
+          }
+        } catch (error) {
+          // Network or other error
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+          showAlert('error', 'Sorry, there was an error sending your message. Please check your connection and try again.');
+          console.error('Form submission error:', error);
+        }
       }
     });
 
@@ -304,6 +331,32 @@
     function isValidEmail(email) {
       const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       return re.test(email);
+    }
+
+    function showAlert(type, message) {
+      // Remove any existing alerts
+      const existingAlert = document.querySelector('.custom-alert');
+      if (existingAlert) {
+        existingAlert.remove();
+      }
+
+      // Create alert element
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `custom-alert alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+      alertDiv.style.cssText = 'position: fixed; top: 100px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+      alertDiv.innerHTML = `
+        <i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill'}"></i>
+        <span style="margin-left: 10px;">${message}</span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+
+      document.body.appendChild(alertDiv);
+
+      // Auto-dismiss after 5 seconds
+      setTimeout(() => {
+        alertDiv.classList.remove('show');
+        setTimeout(() => alertDiv.remove(), 150);
+      }, 5000);
     }
   };
 
