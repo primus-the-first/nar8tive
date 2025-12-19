@@ -1,22 +1,17 @@
 # Enable RewriteEngine
 RewriteEngine On
 
-# Remove .html extension
+# Set base for subdirectory (change to / for production root)
+RewriteBase /nar8tive/
+
+# Remove .html extension - serve file.html when file is requested
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME}.html -f
-RewriteRule ^(.*)$ $1.html [L]
+RewriteRule ^([^\.]+)$ $1.html [NC,L]
 
-# Remove .php extension
+# Remove .php extension - serve file.php when file is requested
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME}.php -f
-RewriteRule ^(.*)$ $1.php [L]
-
-# Redirect .html URLs to clean URLs (optional - for SEO)
-RewriteCond %{THE_REQUEST} /([^.]+)\.html [NC]
-RewriteRule ^ /%1 [NC,L,R=301]
-
-# Redirect .php URLs to clean URLs (optional - for SEO)
-RewriteCond %{THE_REQUEST} /([^.]+)\.php [NC]
-RewriteRule ^ /%1 [NC,L,R=301]
+RewriteRule ^([^\.]+)$ $1.php [NC,L]
