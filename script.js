@@ -284,7 +284,7 @@
           const formData = new FormData(form);
 
           // Submit form via AJAX
-          const response = await fetch('send_email.php', {
+          const response = await fetch('send_email', {
             method: 'POST',
             body: formData
           });
