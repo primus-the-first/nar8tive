@@ -24,3 +24,6 @@ test_email.php
 
 #Guides
 EMAIL_SETUP_GUIDE.md
+
+# Website reference directory (not used in production)
+Website/
