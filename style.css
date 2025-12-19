@@ -3,7 +3,7 @@
   --accent: #2d8b84;
   --accent-light: #3da59d;
   --text-primary: #333333;
-  --text-secondary: #666666;
+  --text-secondary: #555555; /* Improved contrast from #666666 */
   --bg-primary: #fdfbf7;
   --bg-secondary: #f5f1eb;
 }
@@ -26,6 +26,8 @@ h5 {
 .font-script {
   font-family: "Caveat", cursive;
 }
+
+/* Font-display is handled by Google Fonts (&display=swap) */
 
 .text-accent {
   color: var(--accent) !important;

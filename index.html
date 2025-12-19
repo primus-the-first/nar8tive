@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>THE NR8iv AFRICA - Transforming Ideas into Powerful Words</title>
+    <meta name="description" content="Expert storytelling and script services for businesses and creators. We specialize in commercial writing, screenplay creation, webinar planning, and sales scripts that captivate and convert.">
     
     <link rel="apple-touch-icon" sizes="180x180" href="assets/favicon_io/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon_io/favicon-32x32.png">
@@ -30,7 +31,7 @@
                         <span style="font-family: 'Playfair Display', serif;">THE NR8iv</span> <span class="text-accent">AFRICA</span>
                     </span>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Toggle navigation menu">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
@@ -140,7 +141,7 @@
                 <div class="col-md-4">
                     <div class="portfolio-item rounded shadow-sm bg-white">
                         <div class="position-relative">
-                            <img src="assets/1.jpg" alt="You May Only Kiss the Bride" loading="lazy">
+                            <img src="assets/1.jpg" alt="You May Only Kiss the Bride" loading="lazy" width="400" height="300">
                             <div class="portfolio-overlay">
                                 <div class="text-center text-white p-3">
                                     <h3 class="h5 fw-bold">You May Only Kiss the Bride</h3>
@@ -157,7 +158,7 @@
                  <div class="col-md-4">
                     <div class="portfolio-item rounded shadow-sm bg-white">
                         <div class="position-relative">
-                            <img src="assets/2.jpg" alt="The Playbook" loading="lazy">
+                            <img src="assets/2.jpg" alt="The Playbook" loading="lazy" width="400" height="300">
                             <div class="portfolio-overlay">
                                 <div class="text-center text-white p-3">
                                     <div class="mb-2"><i class="bi bi-play-circle fs-2"></i></div>
@@ -175,7 +176,7 @@
                  <div class="col-md-4">
                     <div class="portfolio-item rounded shadow-sm bg-white">
                         <div class="position-relative">
-                            <img src="assets/3.jpg" alt="All Is Fair In Love" loading="lazy">
+                            <img src="assets/3.jpg" alt="All Is Fair In Love" loading="lazy" width="400" height="300">
                             <div class="portfolio-overlay">
                                 <div class="text-center text-white p-3">
                                     <h3 class="h5 fw-bold">All Is Fair In Love</h3>
@@ -192,7 +193,7 @@
                  <div class="col-md-4">
                     <div class="portfolio-item rounded shadow-sm bg-white">
                         <div class="position-relative">
-                            <img src="assets/4.jpg" alt="Italo" loading="lazy">
+                            <img src="assets/4.jpg" alt="Italo" loading="lazy" width="400" height="300">
                             <div class="portfolio-overlay">
                                 <div class="text-center text-white p-3">
                                     <h3 class="h5 fw-bold">Italo</h3>
@@ -285,8 +286,8 @@
                     </div>
                 </div>
                 <div class="mt-4">
-                    <button class="btn btn-sm btn-outline-secondary rounded-circle me-2" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev"><i class="bi bi-chevron-left"></i></button>
-                    <button class="btn btn-sm btn-outline-secondary rounded-circle" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next"><i class="bi bi-chevron-right"></i></button>
+                    <button class="btn btn-sm btn-outline-secondary rounded-circle me-2" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev" aria-label="Previous testimonial"><i class="bi bi-chevron-left"></i></button>
+                    <button class="btn btn-sm btn-outline-secondary rounded-circle" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next" aria-label="Next testimonial"><i class="bi bi-chevron-right"></i></button>
                 </div>
             </div>
         </div>
@@ -336,18 +337,18 @@
                         <form id="contactForm" method="POST" action="send_email.php">
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label small fw-bold">Your Name</label>
-                                    <input type="text" name="name" class="form-control p-3" placeholder="John Doe" required>
+                                    <label for="contact-name" class="form-label small fw-bold">Your Name</label>
+                                    <input type="text" id="contact-name" name="name" class="form-control p-3" placeholder="John Doe" required>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label small fw-bold">Your Email</label>
-                                    <input type="email" name="email" class="form-control p-3" placeholder="john@example.com" required>
+                                    <label for="contact-email" class="form-label small fw-bold">Your Email</label>
+                                    <input type="email" id="contact-email" name="email" class="form-control p-3" placeholder="john@example.com" required>
                                 </div>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label small fw-bold">Project Type</label>
-                                <select name="project_type" class="form-select p-3" required>
-                                    <option selected disabled>Select project type</option>
+                                <label for="contact-project-type" class="form-label small fw-bold">Project Type</label>
+                                <select id="contact-project-type" name="project_type" class="form-select p-3" required>
+                                    <option selected disabled value="">Select project type</option>
                                     <option value="commercial">Commercial Writing</option>
                                     <option value="screenplay">Screenplay Creation</option>
                                     <option value="webinar">Webinar Planning</option>
@@ -355,8 +356,8 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label small fw-bold">Project Description</label>
-                                <textarea name="description" class="form-control p-3" rows="4" placeholder="Tell us about your project..." required></textarea>
+                                <label for="contact-description" class="form-label small fw-bold">Project Description</label>
+                                <textarea id="contact-description" name="description" class="form-control p-3" rows="4" placeholder="Tell us about your project..." required></textarea>
                             </div>
                             <button type="submit" class="btn btn-primary-custom w-100 py-3">Submit Request</button>
                         </form>
