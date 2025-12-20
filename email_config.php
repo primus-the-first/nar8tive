@@ -12,7 +12,7 @@ return [
     // ==============================================
     
     // Recipient email - where contact form submissions will be sent
-    'recipient_email' => 'anthonybonney13@gmail.com',
+    'recipient_email' => 'nr8ivafrica@gmail.com',
     'recipient_name' => 'THE NR8iv AFRICA',
     
     // ==============================================
