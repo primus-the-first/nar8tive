@@ -45,7 +45,7 @@ return [
     // ==============================================
     
     // The email address that will appear as the sender
-    'from_email' => 'anthonybonney13@gmail.com',
+    'from_email' => 'nr8ivafrica@gmail.com',
     'from_name' => 'THE NR8iv AFRICA',
     
     // ==============================================

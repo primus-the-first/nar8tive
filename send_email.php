@@ -150,7 +150,7 @@ try {
     
     $mail->isHTML(true);
     
-    // Embed the logo (Added by Antigravity)
+    // Embed the logo
     $logoPath = __DIR__ . '/assets/logo.jpg';
     if (file_exists($logoPath)) {
         $mail->addEmbeddedImage($logoPath, 'logo');
