@@ -144,35 +144,116 @@
                     </div>
 
                     <div class="col-lg-7">
-                        <div class="bg-light-gray p-4 p-md-5 rounded shadow-sm">
-                            <h3 class="h4 fw-bold mb-4">Request a Project</h3>
-                            <form id="contactForm" method="POST" action="send_email">
-                                <div class="row g-3 mb-3">
-                                    <div class="col-md-6">
-                                        <label for="contact-name" class="form-label small fw-bold">Your Name</label>
-                                        <input type="text" id="contact-name" name="name" class="form-control p-3" placeholder="John Doe" required>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label for="contact-email" class="form-label small fw-bold">Your Email</label>
-                                        <input type="email" id="contact-email" name="email" class="form-control p-3" placeholder="john@example.com" required>
+                        <!-- User Type Toggle -->
+                        <div class="user-type-toggle d-flex gap-2 mb-4">
+                            <button type="button" class="user-type-btn active" data-type="client" id="clientBtn">
+                                <div class="btn-content">
+                                    <i class="bi bi-briefcase"></i>
+                                    <div class="btn-text">
+                                        <span class="btn-title">Hire Us</span>
+                                        <span class="btn-subtitle">I need writing services</span>
                                     </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="contact-project-type" class="form-label small fw-bold">Project Type</label>
-                                    <select id="contact-project-type" name="project_type" class="form-select p-3" required>
-                                        <option selected disabled value="">Select project type</option>
-                                        <option value="commercial">Commercial Writing</option>
-                                        <option value="screenplay">Screenplay Creation</option>
-                                        <option value="webinar">Webinar Planning</option>
-                                        <option value="sales_script">Sales Scripts</option>
-                                    </select>
+                            </button>
+                            <button type="button" class="user-type-btn" data-type="writer" id="writerBtn">
+                                <div class="btn-content">
+                                    <i class="bi bi-pen"></i>
+                                    <div class="btn-text">
+                                        <span class="btn-title">Sell Your Script</span>
+                                        <span class="btn-subtitle">I have a script to sell</span>
+                                    </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label for="contact-description" class="form-label small fw-bold">Project Description</label>
-                                    <textarea id="contact-description" name="description" class="form-control p-3" rows="4" placeholder="Tell us about your project..." required></textarea>
+                            </button>
+                        </div>
+
+                        <!-- Flip Card Container -->
+                        <div class="flip-card">
+                            <div class="flip-card-inner" id="flipCardInner">
+                                <!-- Front Side - Client Form -->
+                                <div class="flip-card-front">
+                                    <div class="bg-light-gray p-4 p-md-5 rounded shadow-sm h-100">
+                                        <h3 class="h4 fw-bold mb-4">
+                                            <i class="bi bi-rocket-takeoff text-accent me-2"></i>Request a Project
+                                        </h3>
+                                        <form id="contactForm" method="POST" action="send_email">
+                                            <input type="hidden" name="form_type" value="client">
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-6">
+                                                    <label for="contact-name" class="form-label small fw-bold">Your Name</label>
+                                                    <input type="text" id="contact-name" name="name" class="form-control p-3" placeholder="John Doe" required>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="contact-email" class="form-label small fw-bold">Your Email</label>
+                                                    <input type="email" id="contact-email" name="email" class="form-control p-3" placeholder="john@example.com" required>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="contact-project-type" class="form-label small fw-bold">Project Type</label>
+                                                <select id="contact-project-type" name="project_type" class="form-select p-3" required>
+                                                    <option selected disabled value="">Select project type</option>
+                                                    <option value="commercial">Commercial Writing</option>
+                                                    <option value="screenplay">Screenplay Creation</option>
+                                                    <option value="webinar">Webinar Planning</option>
+                                                    <option value="script_story_sales">Script & Story Sales</option>
+                                                    <option value="sales_script">Sales Scripts & Copywriting</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="contact-description" class="form-label small fw-bold">Project Description</label>
+                                                <textarea id="contact-description" name="description" class="form-control p-3" rows="4" placeholder="Tell us about your project..." required></textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary-custom w-100 py-3">Submit Request</button>
+                                        </form>
+                                    </div>
                                 </div>
-                                <button type="submit" class="btn btn-primary-custom w-100 py-3">Submit Request</button>
-                            </form>
+
+                                <!-- Back Side - Writer Form -->
+                                <div class="flip-card-back">
+                                    <div class="bg-light-gray p-4 p-md-5 rounded shadow-sm h-100">
+                                        <h3 class="h4 fw-bold mb-4">
+                                            <i class="bi bi-stars text-accent me-2"></i>Sell Your Script
+                                        </h3>
+                                        <p class="text-secondary small mb-4">Have an original script or story? Let us help you find the right buyers and bring your work to market.</p>
+                                        <form id="writerForm" method="POST" action="send_email">
+                                            <input type="hidden" name="form_type" value="writer">
+                                            <div class="row g-3 mb-3">
+                                                <div class="col-md-6">
+                                                    <label for="writer-name" class="form-label small fw-bold">Your Name</label>
+                                                    <input type="text" id="writer-name" name="name" class="form-control p-3" placeholder="Jane Author" required>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label for="writer-email" class="form-label small fw-bold">Your Email</label>
+                                                    <input type="email" id="writer-email" name="email" class="form-control p-3" placeholder="jane@example.com" required>
+                                                </div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="writer-script-type" class="form-label small fw-bold">Script Type</label>
+                                                <select id="writer-script-type" name="script_type" class="form-select p-3" required>
+                                                    <option selected disabled value="">What type of script do you have?</option>
+                                                    <option value="feature_film">Feature Film Screenplay</option>
+                                                    <option value="short_film">Short Film Script</option>
+                                                    <option value="tv_series">TV Series Pilot/Bible</option>
+                                                    <option value="documentary">Documentary Script</option>
+                                                    <option value="commercial_ad">Commercial/Ad Script</option>
+                                                    <option value="web_series">Web Series</option>
+                                                    <option value="other">Other</option>
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="writer-title" class="form-label small fw-bold">Script Title</label>
+                                                <input type="text" id="writer-title" name="script_title" class="form-control p-3" placeholder="The title of your script" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="writer-logline" class="form-label small fw-bold">Logline / Synopsis</label>
+                                                <textarea id="writer-logline" name="logline" class="form-control p-3" rows="3" placeholder="A brief, compelling summary of your story (1-3 sentences)..." required></textarea>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary-custom w-100 py-3">
+                                                <i class="bi bi-send me-2"></i>Submit Your Script
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

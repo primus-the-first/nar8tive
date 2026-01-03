@@ -376,6 +376,130 @@
   };
 
   // ==========================================
+  // FLIP CARD CONTACT FORM TOGGLE
+  // ==========================================
+  const flipCardToggle = () => {
+    const clientBtn = document.getElementById('clientBtn');
+    const writerBtn = document.getElementById('writerBtn');
+    const flipCardInner = document.getElementById('flipCardInner');
+
+    if (!clientBtn || !writerBtn || !flipCardInner) return;
+
+    const toggleCard = (isWriter) => {
+      if (isWriter) {
+        flipCardInner.classList.add('flipped');
+        writerBtn.classList.add('active');
+        clientBtn.classList.remove('active');
+      } else {
+        flipCardInner.classList.remove('flipped');
+        clientBtn.classList.add('active');
+        writerBtn.classList.remove('active');
+      }
+    };
+
+    clientBtn.addEventListener('click', () => toggleCard(false));
+    writerBtn.addEventListener('click', () => toggleCard(true));
+
+    // Handle writer form submission
+    const writerForm = document.getElementById('writerForm');
+    if (writerForm) {
+      writerForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const name = writerForm.querySelector('input[name="name"]');
+        const email = writerForm.querySelector('input[name="email"]');
+        const scriptType = writerForm.querySelector('select[name="script_type"]');
+        const scriptTitle = writerForm.querySelector('input[name="script_title"]');
+        const logline = writerForm.querySelector('textarea[name="logline"]');
+        const submitBtn = writerForm.querySelector('button[type="submit"]');
+
+        // Basic validation
+        let valid = true;
+        const elements = [name, email, scriptType, scriptTitle, logline];
+
+        elements.forEach(el => {
+          if (!el.value || el.value.trim() === '') {
+            el.classList.add('is-invalid');
+            valid = false;
+          } else {
+            el.classList.remove('is-invalid');
+          }
+        });
+
+        // Email validation
+        if (email.value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+          email.classList.add('is-invalid');
+          valid = false;
+        }
+
+        if (valid) {
+          const originalText = submitBtn.innerHTML;
+          submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Sending...';
+          submitBtn.disabled = true;
+
+          try {
+            const formData = new FormData(writerForm);
+
+            const response = await fetch('send_email', {
+              method: 'POST',
+              body: formData
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              writerForm.reset();
+              submitBtn.innerHTML = '<i class="bi bi-check-circle"></i> Submitted Successfully!';
+              submitBtn.classList.remove('btn-primary-custom');
+              submitBtn.classList.add('btn-success');
+
+              // Show success message
+              showWriterAlert('success', result.message || 'Thank you! We will review your script and get back to you soon.');
+
+              setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.classList.remove('btn-success');
+                submitBtn.classList.add('btn-primary-custom');
+                submitBtn.disabled = false;
+              }, 3000);
+            } else {
+              submitBtn.innerHTML = originalText;
+              submitBtn.disabled = false;
+              showWriterAlert('error', result.message || 'Sorry, there was an error. Please try again.');
+            }
+          } catch (error) {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+            showWriterAlert('error', 'Sorry, there was an error. Please check your connection and try again.');
+            console.error('Writer form submission error:', error);
+          }
+        }
+      });
+
+      function showWriterAlert(type, message) {
+        const existingAlert = document.querySelector('.custom-alert');
+        if (existingAlert) existingAlert.remove();
+
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `custom-alert alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show`;
+        alertDiv.style.cssText = 'position: fixed; top: 100px; right: 20px; z-index: 9999; min-width: 300px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+        alertDiv.innerHTML = `
+          <i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'exclamation-triangle-fill'}"></i>
+          <span style="margin-left: 10px;">${message}</span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+        document.body.appendChild(alertDiv);
+
+        setTimeout(() => {
+          alertDiv.classList.remove('show');
+          setTimeout(() => alertDiv.remove(), 150);
+        }, 5000);
+      }
+    }
+  };
+
+  // ==========================================
   // COUNTER ANIMATIONS FOR STATS
   // ==========================================
   const counterAnimation = () => {
@@ -459,6 +583,7 @@
     scrollAnimations();
     sectionFadeOnScroll();
     formEnhancement();
+    flipCardToggle();
     counterAnimation();
     parallaxEffect();
     pageLoader();
