@@ -665,7 +665,7 @@ section::before {
 .flip-card {
   perspective: 1500px;
   width: 100%;
-  min-height: 500px;
+  min-height: 700px;
 }
 
 .flip-card-inner {
@@ -734,7 +734,7 @@ section::before {
 /* Responsive adjustments for flip card */
 @media (max-width: 767.98px) {
   .flip-card {
-    min-height: 550px;
+    min-height: 720px;
   }
 
   .user-type-btn {
@@ -745,7 +745,7 @@ section::before {
 
 @media (max-width: 575.98px) {
   .flip-card {
-    min-height: 600px;
+    min-height: 850px;
   }
 
   .user-type-toggle {
