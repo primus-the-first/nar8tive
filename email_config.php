@@ -61,6 +61,99 @@ return [
     // Enable SMTP debug output (0 = off, 1 = client, 2 = client and server)
     // Set to 0 in production
     'smtp_debug' => 0,
+    
+    // ==============================================
+    // SPAM FILTER SETTINGS
+    // ==============================================
+    
+    // Enable/disable spam filtering
+    'spam_filter_enabled' => true,
+    
+    // Keywords to block (case-insensitive matching)
+    // Emails containing any of these keywords in name, description, or logline will be rejected
+    'spam_keywords' => [
+        // SEO related
+        'seo services',
+        'seo optimization',
+        'seo company',
+        'seo agency',
+        'seo expert',
+        'seo specialist',
+        'search engine optimization',
+        'search engine ranking',
+        'google ranking',
+        'first page of google',
+        'rank on google',
+        'organic traffic',
+        'keyword ranking',
+        'backlink',
+        'link building',
+        
+        // Website optimization offers
+        'website optimization',
+        'site optimization',
+        'website redesign',
+        'website audit',
+        'free website audit',
+        'web development services',
+        'web design services',
+        'improve your website',
+        'boost your traffic',
+        'increase your traffic',
+        'grow your business online',
+        'digital marketing services',
+        'digital marketing agency',
+        'online marketing',
+        'internet marketing',
+        
+        // Common spam phrases
+        'i noticed your website',
+        'i came across your website',
+        'i found your website',
+        'i was looking at your website',
+        'i visited your site',
+        'i was browsing your site',
+        'looking at your business',
+        'perfect candidate for',
+        'special offer',
+        'limited time offer',
+        'act now',
+        'guaranteed results',
+        'quick results',
+        'affordable rates',
+        'competitive pricing',
+        'free consultation',
+        'free quote',
+        'no obligation',
+        'interested in our services',
+        'would you be interested',
+        
+        // Lead generation / Marketing
+        'lead generation',
+        'generate more leads',
+        'qualified leads',
+        'b2b leads',
+        'email list',
+        'email marketing',
+        'cold outreach',
+        
+        // Social media marketing
+        'social media marketing',
+        'smm services',
+        'instagram followers',
+        'facebook marketing',
+        'social media presence',
+        
+        // PPC / Ads
+        'ppc services',
+        'google ads',
+        'facebook ads',
+        'paid advertising',
+        'ad campaign',
+    ],
+    
+    // Custom rejection message for spam
+    'spam_rejection_message' => 'Your message could not be sent. Please contact us directly if this is a legitimate inquiry.',
 ];
 
 /*

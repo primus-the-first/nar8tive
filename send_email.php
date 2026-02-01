@@ -79,6 +79,22 @@ function validate_email($email) {
     return filter_var($email, FILTER_VALIDATE_EMAIL);
 }
 
+/**
+ * Check if content contains spam keywords
+ * @param string $content The content to check
+ * @param array $keywords Array of spam keywords to check against
+ * @return bool|string Returns false if no spam found, or the matched keyword if spam detected
+ */
+function check_for_spam($content, $keywords) {
+    $content_lower = strtolower($content);
+    foreach ($keywords as $keyword) {
+        if (strpos($content_lower, strtolower($keyword)) !== false) {
+            return $keyword; // Return the matched keyword
+        }
+    }
+    return false;
+}
+
 // Get form data
 $form_type = isset($_POST['form_type']) ? sanitize_input($_POST['form_type']) : 'client';
 $name = isset($_POST['name']) ? sanitize_input($_POST['name']) : '';
@@ -132,6 +148,37 @@ if (!empty($errors)) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => implode(', ', $errors)]);
     exit;
+}
+
+// ==============================================
+// SPAM FILTER CHECK
+// ==============================================
+if (!empty($config['spam_filter_enabled']) && $config['spam_filter_enabled'] === true) {
+    $spam_keywords = $config['spam_keywords'] ?? [];
+    
+    if (!empty($spam_keywords)) {
+        // Combine all text fields to check for spam
+        $content_to_check = implode(' ', [
+            $name,
+            $description,
+            $logline,
+            $script_title,
+            $project_type
+        ]);
+        
+        $matched_keyword = check_for_spam($content_to_check, $spam_keywords);
+        
+        if ($matched_keyword !== false) {
+            // Log the spam attempt for monitoring
+            error_log("Spam email blocked. Matched keyword: '{$matched_keyword}' | Email: {$email} | Name: {$name}");
+            
+            // Return a generic message (don't reveal spam was detected)
+            http_response_code(200); // Return 200 so spammers think it succeeded
+            $rejection_message = $config['spam_rejection_message'] ?? 'Thank you for your message! We will get back to you soon.';
+            echo json_encode(['success' => true, 'message' => $rejection_message]);
+            exit;
+        }
+    }
 }
 
 // Create PHPMailer instance
