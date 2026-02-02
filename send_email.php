@@ -80,19 +80,61 @@ function validate_email($email) {
 }
 
 /**
- * Check if content contains spam keywords
+ * Check for HIGH CONFIDENCE spam keywords using WORD BOUNDARY matching.
+ * This ensures we match whole words/phrases, not substrings.
+ * Example: "seo services" matches "need seo services?" but NOT "video services"
+ * 
  * @param string $content The content to check
- * @param array $keywords Array of spam keywords to check against
- * @return bool|string Returns false if no spam found, or the matched keyword if spam detected
+ * @param array $keywords Array of high-confidence spam keywords
+ * @return array Array of matched keywords (empty if none found)
  */
-function check_for_spam($content, $keywords) {
+function check_high_confidence_spam($content, $keywords) {
+    $matches = [];
     $content_lower = strtolower($content);
+    
     foreach ($keywords as $keyword) {
-        if (strpos($content_lower, strtolower($keyword)) !== false) {
-            return $keyword; // Return the matched keyword
+        $keyword_lower = strtolower($keyword);
+        // Use word boundary regex for exact phrase matching
+        $pattern = '/\b' . preg_quote($keyword_lower, '/') . '\b/i';
+        if (preg_match($pattern, $content_lower)) {
+            $matches[] = $keyword;
         }
     }
-    return false;
+    
+    return $matches;
+}
+
+/**
+ * Check for LOW CONFIDENCE spam keywords using SUBSTRING matching.
+ * These are soft flags that count toward the threshold.
+ * 
+ * @param string $content The content to check
+ * @param array $keywords Array of low-confidence spam keywords
+ * @return array Array of matched keywords (empty if none found)
+ */
+function check_low_confidence_spam($content, $keywords) {
+    $matches = [];
+    $content_lower = strtolower($content);
+    
+    foreach ($keywords as $keyword) {
+        if (strpos($content_lower, strtolower($keyword)) !== false) {
+            $matches[] = $keyword;
+        }
+    }
+    
+    return $matches;
+}
+
+/**
+ * Generate a pseudonymized identifier for logging (GDPR/PII compliant)
+ * Uses SHA-256 hash with a salt to prevent reverse lookup
+ * 
+ * @param string $email The email to hash
+ * @return string First 12 characters of the hash for brevity
+ */
+function get_submission_id($email) {
+    $salt = 'nr8iv_spam_log_2024'; // Static salt for consistent hashing
+    return substr(hash('sha256', $salt . strtolower($email)), 0, 12);
 }
 
 // Get form data
@@ -154,30 +196,50 @@ if (!empty($errors)) {
 // SPAM FILTER CHECK
 // ==============================================
 if (!empty($config['spam_filter_enabled']) && $config['spam_filter_enabled'] === true) {
-    $spam_keywords = $config['spam_keywords'] ?? [];
+    $high_confidence_keywords = $config['spam_keywords'] ?? [];
+    $low_confidence_keywords = $config['spam_keywords_low_confidence'] ?? [];
+    $minimum_matches = $config['spam_minimum_matches'] ?? 2;
     
-    if (!empty($spam_keywords)) {
-        // Combine all text fields to check for spam
-        $content_to_check = implode(' ', [
-            $name,
-            $description,
-            $logline,
-            $script_title,
-            $project_type
-        ]);
+    // Combine all text fields to check for spam
+    $content_to_check = implode(' ', [
+        $name,
+        $description,
+        $logline,
+        $script_title,
+        $project_type
+    ]);
+    
+    // Generate pseudonymized ID for logging (no PII)
+    $submission_id = get_submission_id($email);
+    
+    // Check high confidence keywords first (any match = auto-reject)
+    $high_matches = check_high_confidence_spam($content_to_check, $high_confidence_keywords);
+    
+    if (!empty($high_matches)) {
+        // Log spam attempt without PII
+        error_log("Spam blocked [HIGH] | ID: {$submission_id} | Keywords: " . implode(', ', $high_matches) . " | Form: {$form_type}");
         
-        $matched_keyword = check_for_spam($content_to_check, $spam_keywords);
+        // Return success to not alert spammers
+        http_response_code(200);
+        $rejection_message = $config['spam_rejection_message'] ?? 'Thank you for your message! We will get back to you soon.';
+        echo json_encode(['success' => true, 'message' => $rejection_message]);
+        exit;
+    }
+    
+    // Check low confidence keywords (threshold-based)
+    $low_matches = check_low_confidence_spam($content_to_check, $low_confidence_keywords);
+    
+    if (count($low_matches) >= $minimum_matches) {
+        // Threshold exceeded - auto-reject
+        error_log("Spam blocked [LOW-THRESHOLD] | ID: {$submission_id} | Matches: " . count($low_matches) . "/{$minimum_matches} | Keywords: " . implode(', ', $low_matches) . " | Form: {$form_type}");
         
-        if ($matched_keyword !== false) {
-            // Log the spam attempt for monitoring
-            error_log("Spam email blocked. Matched keyword: '{$matched_keyword}' | Email: {$email} | Name: {$name}");
-            
-            // Return a generic message (don't reveal spam was detected)
-            http_response_code(200); // Return 200 so spammers think it succeeded
-            $rejection_message = $config['spam_rejection_message'] ?? 'Thank you for your message! We will get back to you soon.';
-            echo json_encode(['success' => true, 'message' => $rejection_message]);
-            exit;
-        }
+        http_response_code(200);
+        $rejection_message = $config['spam_rejection_message'] ?? 'Thank you for your message! We will get back to you soon.';
+        echo json_encode(['success' => true, 'message' => $rejection_message]);
+        exit;
+    } elseif (!empty($low_matches)) {
+        // Below threshold - log for review but allow through
+        error_log("Spam flagged [LOW-REVIEW] | ID: {$submission_id} | Matches: " . count($low_matches) . "/{$minimum_matches} | Keywords: " . implode(', ', $low_matches) . " | Form: {$form_type} | Status: ALLOWED");
     }
 }
 

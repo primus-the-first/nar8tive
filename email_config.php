@@ -69,10 +69,29 @@ return [
     // Enable/disable spam filtering
     'spam_filter_enabled' => true,
     
-    // Keywords to block (case-insensitive matching)
-    // Emails containing any of these keywords in name, description, or logline will be rejected
+    /**
+     * MATCHING BEHAVIOR:
+     * - All matching is CASE-INSENSITIVE
+     * - High confidence keywords use WORD BOUNDARY matching (whole words/phrases only)
+     *   Example: "seo services" matches "need seo services?" but NOT "video services"
+     * - Low confidence keywords use SUBSTRING matching (partial matches allowed)
+     *   Example: "website" in low confidence would match "mywebsite" - use carefully
+     * 
+     * AUTO-REJECT LOGIC:
+     * - ANY high confidence match = immediate auto-reject
+     * - Low confidence matches count toward 'spam_minimum_matches' threshold
+     * - If low confidence matches >= threshold, auto-reject
+     * - Otherwise, email is allowed through (soft flag logged for review)
+     */
+    
+    // Minimum low-confidence keyword matches required to auto-reject
+    // Set higher to be more lenient, lower to be stricter
+    'spam_minimum_matches' => 2,
+    
+    // HIGH CONFIDENCE: Auto-reject on ANY match (word boundary matching)
+    // These are clearly spam-only phrases unlikely in legitimate inquiries
     'spam_keywords' => [
-        // SEO related
+        // SEO-specific spam phrases
         'seo services',
         'seo optimization',
         'seo company',
@@ -89,24 +108,7 @@ return [
         'backlink',
         'link building',
         
-        // Website optimization offers
-        'website optimization',
-        'site optimization',
-        'website redesign',
-        'website audit',
-        'free website audit',
-        'web development services',
-        'web design services',
-        'improve your website',
-        'boost your traffic',
-        'increase your traffic',
-        'grow your business online',
-        'digital marketing services',
-        'digital marketing agency',
-        'online marketing',
-        'internet marketing',
-        
-        // Common spam phrases
+        // Clear spam opener phrases
         'i noticed your website',
         'i came across your website',
         'i found your website',
@@ -115,37 +117,66 @@ return [
         'i was browsing your site',
         'looking at your business',
         'perfect candidate for',
-        'special offer',
-        'limited time offer',
-        'act now',
+        
+        // Spam marketing phrases
         'guaranteed results',
         'quick results',
-        'affordable rates',
-        'competitive pricing',
-        'free consultation',
-        'free quote',
         'no obligation',
         'interested in our services',
         'would you be interested',
         
-        // Lead generation / Marketing
+        // Lead generation spam
         'lead generation',
         'generate more leads',
         'qualified leads',
         'b2b leads',
-        'email list',
-        'email marketing',
         'cold outreach',
         
-        // Social media marketing
-        'social media marketing',
+        // Social media spam
         'smm services',
         'instagram followers',
+        
+        // PPC spam
+        'ppc services',
+    ],
+    
+    // LOW CONFIDENCE: Soft flags - may appear in legitimate project requests
+    // Only auto-reject if matches >= spam_minimum_matches threshold
+    'spam_keywords_low_confidence' => [
+        // These could be legitimate project requests
+        'website redesign',
+        'website audit',
+        'free website audit',
+        'web development services',
+        'web design services',
+        'improve your website',
+        'website optimization',
+        'site optimization',
+        
+        // Marketing terms that could be legitimate
+        'boost your traffic',
+        'increase your traffic',
+        'grow your business online',
+        'digital marketing services',
+        'digital marketing agency',
+        'online marketing',
+        'internet marketing',
+        'social media marketing',
         'facebook marketing',
         'social media presence',
+        'email marketing',
+        'email list',
         
-        // PPC / Ads
-        'ppc services',
+        // Generic sales phrases
+        'special offer',
+        'limited time offer',
+        'act now',
+        'affordable rates',
+        'competitive pricing',
+        'free consultation',
+        'free quote',
+        
+        // Ads-related (could be legitimate project type)
         'google ads',
         'facebook ads',
         'paid advertising',
