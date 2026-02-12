@@ -175,14 +175,14 @@ function contains_url($content) {
 }
 
 /**
- * Check if name contains Cyrillic or other non-Latin script characters
- * that are unlikely for legitimate English-language form submissions.
+ * Check if name contains Cyrillic script characters (Russian, Ukrainian, etc.)
+ * Only targets Cyrillic — does NOT flag Arabic, Chinese, Japanese, Korean, Greek, etc.
  * 
  * @param string $name The name to check
- * @return bool True if non-Latin characters are detected
+ * @return bool True if Cyrillic characters are detected
  */
-function contains_non_latin($name) {
-    // Check for Cyrillic characters (ё, х, etc.)
+function contains_cyrillic($name) {
+    // Unicode range \x{0400}-\x{04FF} = Cyrillic block only
     return (bool)preg_match('/[\x{0400}-\x{04FF}]/u', $name);
 }
 
@@ -328,9 +328,9 @@ if (!empty($config['spam_filter_enabled']) && $config['spam_filter_enabled'] ===
         }
     }
     
-    if (!empty($config['block_non_latin_name'])) {
-        if (contains_non_latin($raw_name)) {
-            $silent_reject('BOT-CYRILLIC', 'Non-Latin characters in name');
+    if (!empty($config['block_cyrillic_name'])) {
+        if (contains_cyrillic($raw_name)) {
+            $silent_reject('BOT-CYRILLIC', 'Cyrillic characters in name');
         }
     }
     

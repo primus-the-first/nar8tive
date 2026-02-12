@@ -78,7 +78,7 @@ return [
      *   Example: "website" in low confidence would match "mywebsite" - use carefully
      * 
      * AUTO-REJECT LOGIC (checked in order):
-     * 1. BOT PATTERN DETECTION: HTML tags, URLs, or Cyrillic in form fields = auto-reject
+     * 1. BOT PATTERN DETECTION: HTML tags, URLs, or Cyrillic script in name = auto-reject
      * 2. BLOCKED EMAIL DOMAINS: Sender email from blocked domain = auto-reject
      * 3. GIBBERISH DETECTION: Name, title, or logline too short/random = auto-reject
      * 4. HIGH CONFIDENCE KEYWORDS: ANY match = auto-reject
@@ -99,8 +99,9 @@ return [
     // Block form submissions containing URLs in name/title/logline fields
     'block_urls_in_fields' => true,
     
-    // Block form submissions containing Cyrillic or non-Latin characters in name
-    'block_non_latin_name' => true,
+    // Block form submissions containing Cyrillic script characters in name
+    // (targets Russian/Ukrainian spam bots; does NOT block Arabic, Chinese, Japanese, etc.)
+    'block_cyrillic_name' => true,
     
     // Minimum length for meaningful text fields (script_title, logline, description)
     // Submissions with ALL text fields shorter than this are likely bots
