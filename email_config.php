@@ -77,16 +77,61 @@ return [
      * - Low confidence keywords use SUBSTRING matching (partial matches allowed)
      *   Example: "website" in low confidence would match "mywebsite" - use carefully
      * 
-     * AUTO-REJECT LOGIC:
-     * - ANY high confidence match = immediate auto-reject
-     * - Low confidence matches count toward 'spam_minimum_matches' threshold
-     * - If low confidence matches >= threshold, auto-reject
-     * - Otherwise, email is allowed through (soft flag logged for review)
+     * AUTO-REJECT LOGIC (checked in order):
+     * 1. BOT PATTERN DETECTION: HTML tags, URLs, or Cyrillic in form fields = auto-reject
+     * 2. BLOCKED EMAIL DOMAINS: Sender email from blocked domain = auto-reject
+     * 3. GIBBERISH DETECTION: Name, title, or logline too short/random = auto-reject
+     * 4. HIGH CONFIDENCE KEYWORDS: ANY match = auto-reject
+     * 5. LOW CONFIDENCE KEYWORDS: matches >= threshold = auto-reject
      */
     
     // Minimum low-confidence keyword matches required to auto-reject
     // Set higher to be more lenient, lower to be stricter
     'spam_minimum_matches' => 2,
+    
+    // ==============================================
+    // BOT PATTERN DETECTION (runs before keyword checks)
+    // ==============================================
+    
+    // Block form submissions containing HTML tags (e.g. <a href="...">)
+    'block_html_in_fields' => true,
+    
+    // Block form submissions containing URLs in name/title/logline fields
+    'block_urls_in_fields' => true,
+    
+    // Block form submissions containing Cyrillic or non-Latin characters in name
+    'block_non_latin_name' => true,
+    
+    // Minimum length for meaningful text fields (script_title, logline, description)
+    // Submissions with ALL text fields shorter than this are likely bots
+    'min_meaningful_field_length' => 10,
+    
+    // ==============================================
+    // BLOCKED EMAIL DOMAINS
+    // ==============================================
+    // Emails from these domains are always rejected
+    'blocked_email_domains' => [
+        'mailbox.in.ua',
+        'tempmail.com',
+        'throwaway.email',
+        'guerrillamail.com',
+        'guerrillamail.de',
+        'sharklasers.com',
+        'grr.la',
+        'guerrillamailblock.com',
+        'yopmail.com',
+        'yopmail.fr',
+        'mailinator.com',
+        'trashmail.com',
+        'trashmail.me',
+        'dispostable.com',
+        'maildrop.cc',
+        'fakeinbox.com',
+        'temp-mail.org',
+        'tempail.com',
+        'mohmal.com',
+        'getnada.com',
+    ],
     
     // HIGH CONFIDENCE: Auto-reject on ANY match (word boundary matching)
     // These are clearly spam-only phrases unlikely in legitimate inquiries
@@ -138,6 +183,25 @@ return [
         
         // PPC spam
         'ppc services',
+        
+        // Phishing / Payment scam phrases
+        'payment available',
+        'confirm your operation',
+        'confirm your payment',
+        'claim your payment',
+        'unclaimed funds',
+        'wire transfer',
+        'bitcoin payment',
+        'cryptocurrency payment',
+        'lottery winner',
+        'you have been selected',
+        'inheritance fund',
+        'urgent response needed',
+        'verify your account',
+        'account suspended',
+        'click here to confirm',
+        'dear beneficiary',
+        'dear winner',
     ],
     
     // LOW CONFIDENCE: Soft flags - may appear in legitimate project requests

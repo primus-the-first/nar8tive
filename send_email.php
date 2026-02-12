@@ -137,6 +137,91 @@ function get_submission_id($email) {
     return substr(hash('sha256', $salt . strtolower($email)), 0, 12);
 }
 
+/**
+ * Check if content contains HTML tags or HTML-encoded entities.
+ * Bot submissions often inject raw or encoded HTML like <a href="...">, &lt;a&gt;, etc.
+ * 
+ * @param string $content The content to check
+ * @return bool|string False if clean, or the matched pattern description if HTML detected
+ */
+function contains_html($content) {
+    // Check for raw HTML tags
+    if (preg_match('/<[a-z][^>]*>/i', $content)) {
+        return 'raw HTML tag';
+    }
+    // Check for HTML-encoded tags (e.g., &lt;a href=&quot;...&quot;&gt;)
+    if (preg_match('/&lt;[a-z]/i', $content) || preg_match('/&amp;lt;/i', $content)) {
+        return 'encoded HTML entity';
+    }
+    // Check for href= or src= attributes (even without full tags)
+    if (preg_match('/href\s*=|src\s*=/i', $content)) {
+        return 'HTML attribute (href/src)';
+    }
+    return false;
+}
+
+/**
+ * Check if content contains URLs (http://, https://, www.)
+ * Legitimate form submissions rarely contain raw URLs in name/title fields.
+ * 
+ * @param string $content The content to check
+ * @return bool|string False if clean, or the matched URL pattern if detected
+ */
+function contains_url($content) {
+    if (preg_match('/(https?:\/\/|www\.)[^\s]+/i', $content)) {
+        return 'URL detected';
+    }
+    return false;
+}
+
+/**
+ * Check if name contains Cyrillic or other non-Latin script characters
+ * that are unlikely for legitimate English-language form submissions.
+ * 
+ * @param string $name The name to check
+ * @return bool True if non-Latin characters are detected
+ */
+function contains_non_latin($name) {
+    // Check for Cyrillic characters (ё, х, etc.)
+    return (bool)preg_match('/[\x{0400}-\x{04FF}]/u', $name);
+}
+
+/**
+ * Check if an email domain is in the blocked list.
+ * 
+ * @param string $email The full email address
+ * @param array $blocked_domains Array of blocked domain strings
+ * @return bool|string False if clean, or the matched domain
+ */
+function is_blocked_domain($email, $blocked_domains) {
+    $domain = strtolower(substr(strrchr($email, '@'), 1));
+    foreach ($blocked_domains as $blocked) {
+        if ($domain === strtolower($blocked)) {
+            return $blocked;
+        }
+    }
+    return false;
+}
+
+/**
+ * Check if text fields contain gibberish / are too short to be meaningful.
+ * Bot submissions often use random character strings like "toc2kc", "hfp9ky".
+ * 
+ * @param array $fields Array of text field values to check
+ * @param int $min_length Minimum expected length for meaningful content
+ * @return bool True if ALL fields are suspiciously short/gibberish
+ */
+function is_gibberish($fields, $min_length = 10) {
+    $all_short = true;
+    foreach ($fields as $field) {
+        if (!empty($field) && strlen(trim($field)) >= $min_length) {
+            $all_short = false;
+            break;
+        }
+    }
+    return $all_short;
+}
+
 // Get form data
 $form_type = isset($_POST['form_type']) ? sanitize_input($_POST['form_type']) : 'client';
 $name = isset($_POST['name']) ? sanitize_input($_POST['name']) : '';
@@ -150,6 +235,13 @@ $description = isset($_POST['description']) ? sanitize_input($_POST['description
 $script_type = isset($_POST['script_type']) ? sanitize_input($_POST['script_type']) : '';
 $script_title = isset($_POST['script_title']) ? sanitize_input($_POST['script_title']) : '';
 $logline = isset($_POST['logline']) ? sanitize_input($_POST['logline']) : '';
+
+// Also grab the RAW (unsanitized) POST data for HTML/URL detection
+// because sanitize_input runs htmlspecialchars which encodes < to &lt;
+$raw_name = isset($_POST['name']) ? trim($_POST['name']) : '';
+$raw_description = isset($_POST['description']) ? trim($_POST['description']) : '';
+$raw_logline = isset($_POST['logline']) ? trim($_POST['logline']) : '';
+$raw_script_title = isset($_POST['script_title']) ? trim($_POST['script_title']) : '';
 
 // Validation
 $errors = [];
@@ -196,47 +288,102 @@ if (!empty($errors)) {
 // SPAM FILTER CHECK
 // ==============================================
 if (!empty($config['spam_filter_enabled']) && $config['spam_filter_enabled'] === true) {
-    $high_confidence_keywords = $config['spam_keywords'] ?? [];
-    $low_confidence_keywords = $config['spam_keywords_low_confidence'] ?? [];
-    $minimum_matches = $config['spam_minimum_matches'] ?? 2;
-    
-    // Combine all text fields to check for spam
-    $content_to_check = implode(' ', [
-        $name,
-        $description,
-        $logline,
-        $script_title,
-        $project_type
-    ]);
     
     // Generate pseudonymized ID for logging (no PII)
     $submission_id = get_submission_id($email);
     
-    // Check high confidence keywords first (any match = auto-reject)
+    // Helper: silently reject and exit
+    $silent_reject = function($reason, $detail) use ($submission_id, $form_type, $config) {
+        error_log("Spam blocked [{$reason}] | ID: {$submission_id} | Detail: {$detail} | Form: {$form_type}");
+        http_response_code(200);
+        $msg = $config['spam_rejection_message'] ?? 'Thank you for your message! We will get back to you soon.';
+        echo json_encode(['success' => true, 'message' => $msg]);
+        exit;
+    };
+    
+    // ------------------------------------------
+    // LAYER 1: BOT PATTERN DETECTION
+    // ------------------------------------------
+    
+    // Check both raw AND sanitized content for HTML (catches encoded entities too)
+    $all_raw_content = $raw_name . ' ' . $raw_description . ' ' . $raw_logline . ' ' . $raw_script_title;
+    $all_sanitized_content = $name . ' ' . $description . ' ' . $logline . ' ' . $script_title;
+    
+    if (!empty($config['block_html_in_fields'])) {
+        $html_match = contains_html($all_raw_content);
+        if (!$html_match) {
+            $html_match = contains_html($all_sanitized_content);
+        }
+        if ($html_match) {
+            $silent_reject('BOT-HTML', $html_match);
+        }
+    }
+    
+    if (!empty($config['block_urls_in_fields'])) {
+        // Check URLs in name, title, logline (but NOT description, where URLs may be legitimate)
+        $url_fields = $raw_name . ' ' . $raw_logline . ' ' . $raw_script_title;
+        $url_match = contains_url($url_fields);
+        if ($url_match) {
+            $silent_reject('BOT-URL', $url_match);
+        }
+    }
+    
+    if (!empty($config['block_non_latin_name'])) {
+        if (contains_non_latin($raw_name)) {
+            $silent_reject('BOT-CYRILLIC', 'Non-Latin characters in name');
+        }
+    }
+    
+    // ------------------------------------------
+    // LAYER 2: BLOCKED EMAIL DOMAINS
+    // ------------------------------------------
+    $blocked_domains = $config['blocked_email_domains'] ?? [];
+    if (!empty($blocked_domains)) {
+        $blocked_domain = is_blocked_domain($email, $blocked_domains);
+        if ($blocked_domain !== false) {
+            $silent_reject('BLOCKED-DOMAIN', $blocked_domain);
+        }
+    }
+    
+    // ------------------------------------------
+    // LAYER 3: GIBBERISH / BOT CONTENT DETECTION
+    // ------------------------------------------
+    $min_len = $config['min_meaningful_field_length'] ?? 10;
+    
+    // For writer form: check script_title and logline
+    // For client form: check description
+    if ($form_type === 'writer') {
+        if (is_gibberish([$script_title, $logline], $min_len)) {
+            $silent_reject('BOT-GIBBERISH', 'All text fields below minimum length');
+        }
+    } else {
+        if (is_gibberish([$description], $min_len)) {
+            $silent_reject('BOT-GIBBERISH', 'Description below minimum length');
+        }
+    }
+    
+    // ------------------------------------------
+    // LAYER 4: HIGH CONFIDENCE KEYWORD CHECK
+    // ------------------------------------------
+    $high_confidence_keywords = $config['spam_keywords'] ?? [];
+    $content_to_check = implode(' ', [$name, $description, $logline, $script_title, $project_type]);
+    
     $high_matches = check_high_confidence_spam($content_to_check, $high_confidence_keywords);
     
     if (!empty($high_matches)) {
-        // Log spam attempt without PII
-        error_log("Spam blocked [HIGH] | ID: {$submission_id} | Keywords: " . implode(', ', $high_matches) . " | Form: {$form_type}");
-        
-        // Return success to not alert spammers
-        http_response_code(200);
-        $rejection_message = $config['spam_rejection_message'] ?? 'Thank you for your message! We will get back to you soon.';
-        echo json_encode(['success' => true, 'message' => $rejection_message]);
-        exit;
+        $silent_reject('HIGH-KEYWORD', implode(', ', $high_matches));
     }
     
-    // Check low confidence keywords (threshold-based)
+    // ------------------------------------------
+    // LAYER 5: LOW CONFIDENCE KEYWORD CHECK (threshold-based)
+    // ------------------------------------------
+    $low_confidence_keywords = $config['spam_keywords_low_confidence'] ?? [];
+    $minimum_matches = $config['spam_minimum_matches'] ?? 2;
+    
     $low_matches = check_low_confidence_spam($content_to_check, $low_confidence_keywords);
     
     if (count($low_matches) >= $minimum_matches) {
-        // Threshold exceeded - auto-reject
-        error_log("Spam blocked [LOW-THRESHOLD] | ID: {$submission_id} | Matches: " . count($low_matches) . "/{$minimum_matches} | Keywords: " . implode(', ', $low_matches) . " | Form: {$form_type}");
-        
-        http_response_code(200);
-        $rejection_message = $config['spam_rejection_message'] ?? 'Thank you for your message! We will get back to you soon.';
-        echo json_encode(['success' => true, 'message' => $rejection_message]);
-        exit;
+        $silent_reject('LOW-THRESHOLD', count($low_matches) . "/{$minimum_matches} matches: " . implode(', ', $low_matches));
     } elseif (!empty($low_matches)) {
         // Below threshold - log for review but allow through
         error_log("Spam flagged [LOW-REVIEW] | ID: {$submission_id} | Matches: " . count($low_matches) . "/{$minimum_matches} | Keywords: " . implode(', ', $low_matches) . " | Form: {$form_type} | Status: ALLOWED");
