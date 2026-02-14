@@ -231,7 +231,6 @@ return [
         'contact form blasting',
         'contact form marketing',
         'contact form messages',
-        'feedback form',
         'million messages',
         'bulk email',
         'bulk mailing',
@@ -284,6 +283,9 @@ return [
         'facebook ads',
         'paid advertising',
         'ad campaign',
+        
+        // Could be a legitimate project request (e.g., "build a feedback form")
+        'feedback form',
     ],
     
     // Custom rejection message for spam
