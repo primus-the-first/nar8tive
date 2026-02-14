@@ -103,6 +103,10 @@ return [
     // (targets Russian/Ukrainian spam bots; does NOT block Arabic, Chinese, Japanese, etc.)
     'block_cyrillic_name' => true,
     
+    // Block form submissions containing messaging platform links (Telegram, WhatsApp)
+    // in ANY field including description. Legitimate clients don't include t.me/ or wa.me/ links.
+    'block_messaging_links' => true,
+    
     // Minimum length for meaningful text fields (script_title, logline, description)
     // Submissions with ALL text fields shorter than this are likely bots
     'min_meaningful_field_length' => 10,
@@ -132,6 +136,20 @@ return [
         'tempail.com',
         'mohmal.com',
         'getnada.com',
+    ],
+    
+    // ==============================================
+    // BLOCKED EMAIL PREFIXES
+    // ==============================================
+    // Emails starting with these prefixes are always rejected.
+    // Bots commonly use "no.reply", "noreply", "no-reply" style senders.
+    'blocked_email_prefixes' => [
+        'no.reply',
+        'noreply',
+        'no-reply',
+        'do-not-reply',
+        'donotreply',
+        'do.not.reply',
     ],
     
     // HIGH CONFIDENCE: Auto-reject on ANY match (word boundary matching)
@@ -203,6 +221,26 @@ return [
         'click here to confirm',
         'dear beneficiary',
         'dear winner',
+        
+        // Mass-mailing / Spam service advertisements
+        'send a letter',
+        'dispatch up to',
+        'messages in your behalf',
+        'messages on your behalf',
+        'communication forms',
+        'contact form blasting',
+        'contact form marketing',
+        'contact form messages',
+        'feedback form',
+        'million messages',
+        'bulk email',
+        'bulk mailing',
+        'mass mailing',
+        'mass email',
+        'we only use chat for communication',
+        'this offer is automatically generated',
+        'classified as spam',
+        'less of a chance of being',
     ],
     
     // LOW CONFIDENCE: Soft flags - may appear in legitimate project requests

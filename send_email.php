@@ -175,6 +175,32 @@ function contains_url($content) {
 }
 
 /**
+ * Check if content contains messaging platform links (Telegram, WhatsApp, Signal, etc.)
+ * These are almost never present in legitimate project inquiries.
+ * Checked across ALL fields including description.
+ * 
+ * @param string $content The content to check
+ * @return bool|string False if clean, or the matched platform if detected
+ */
+function contains_messaging_link($content) {
+    $patterns = [
+        '/t\.me\//i'                  => 'Telegram link (t.me)',
+        '/telegram\.me\//i'           => 'Telegram link (telegram.me)',
+        '/wa\.me\//i'                 => 'WhatsApp link (wa.me)',
+        '/chat\.whatsapp\.com\//i'    => 'WhatsApp group link',
+        '/signal\.me\//i'             => 'Signal link',
+        '/discord\.gg\//i'            => 'Discord invite link',
+    ];
+    
+    foreach ($patterns as $pattern => $label) {
+        if (preg_match($pattern, $content)) {
+            return $label;
+        }
+    }
+    return false;
+}
+
+/**
  * Check if name contains Cyrillic script characters (Russian, Ukrainian, etc.)
  * Only targets Cyrillic — does NOT flag Arabic, Chinese, Japanese, Korean, Greek, etc.
  * 
@@ -198,6 +224,24 @@ function is_blocked_domain($email, $blocked_domains) {
     foreach ($blocked_domains as $blocked) {
         if ($domain === strtolower($blocked)) {
             return $blocked;
+        }
+    }
+    return false;
+}
+
+/**
+ * Check if an email address starts with a blocked prefix (e.g., "no.reply", "noreply").
+ * Bots commonly use these prefixes even on legitimate domains like gmail.com.
+ * 
+ * @param string $email The full email address
+ * @param array $blocked_prefixes Array of blocked prefix strings
+ * @return bool|string False if clean, or the matched prefix
+ */
+function is_blocked_prefix($email, $blocked_prefixes) {
+    $local_part = strtolower(substr($email, 0, strpos($email, '@')));
+    foreach ($blocked_prefixes as $prefix) {
+        if (strpos($local_part, strtolower($prefix)) === 0) {
+            return $prefix;
         }
     }
     return false;
@@ -334,6 +378,15 @@ if (!empty($config['spam_filter_enabled']) && $config['spam_filter_enabled'] ===
         }
     }
     
+    // Check messaging platform links in ALL fields (including description)
+    if (!empty($config['block_messaging_links'])) {
+        $all_raw_fields = $raw_name . ' ' . $raw_description . ' ' . $raw_logline . ' ' . $raw_script_title;
+        $messaging_match = contains_messaging_link($all_raw_fields);
+        if ($messaging_match) {
+            $silent_reject('BOT-MESSAGING', $messaging_match);
+        }
+    }
+    
     // ------------------------------------------
     // LAYER 2: BLOCKED EMAIL DOMAINS
     // ------------------------------------------
@@ -342,6 +395,15 @@ if (!empty($config['spam_filter_enabled']) && $config['spam_filter_enabled'] ===
         $blocked_domain = is_blocked_domain($email, $blocked_domains);
         if ($blocked_domain !== false) {
             $silent_reject('BLOCKED-DOMAIN', $blocked_domain);
+        }
+    }
+    
+    // Check blocked email prefixes (e.g., no.reply@gmail.com)
+    $blocked_prefixes = $config['blocked_email_prefixes'] ?? [];
+    if (!empty($blocked_prefixes)) {
+        $blocked_prefix = is_blocked_prefix($email, $blocked_prefixes);
+        if ($blocked_prefix !== false) {
+            $silent_reject('BLOCKED-PREFIX', $blocked_prefix);
         }
     }
     
