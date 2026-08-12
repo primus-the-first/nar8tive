@@ -213,6 +213,71 @@ function contains_cyrillic($name) {
 }
 
 /**
+ * Check if content contains Georgian script characters (e.g. მინდოდა).
+ * Common in certain automated form spam.
+ * 
+ * @param string $content The text to check
+ * @return bool True if Georgian script is detected
+ */
+function contains_georgian($content) {
+    return (bool)preg_match('/[\x{10A0}-\x{10FF}\x{2D00}-\x{2D2F}]/u', $content);
+}
+
+/**
+ * Check if the email domain is suspicious/spoofed (e.g., search-nr8ivafrica.com or indexhelp.pro).
+ * 
+ * @param string $email
+ * @return bool|string False if clean, or matched domain/reason
+ */
+function is_spoofed_domain($email) {
+    $domain = strtolower(substr(strrchr($email, '@'), 1));
+    if (!$domain) return false;
+    
+    // Check for fake domain variations of site domain
+    if (strpos($domain, 'search-') !== false || 
+        strpos($domain, 'indexhelp') !== false || 
+        (strpos($domain, 'nr8ivafrica') !== false && $domain !== 'nr8ivafrica.com')) {
+        return $domain;
+    }
+    return false;
+}
+
+/**
+ * IP-based Rate Limiting helper function.
+ * Tracks form submissions per IP in sys_get_temp_dir().
+ * 
+ * @param string $ip Client IP
+ * @param int $max_requests Maximum allowed submissions in period
+ * @param int $period_seconds Time period in seconds
+ * @return bool True if within limits, False if exceeded
+ */
+function check_rate_limit($ip, $max_requests = 3, $period_seconds = 900) {
+    $file = sys_get_temp_dir() . '/nr8iv_rate_' . md5($ip) . '.json';
+    $now = time();
+    $timestamps = [];
+    
+    if (file_exists($file)) {
+        $raw = @file_get_contents($file);
+        $data = json_decode($raw, true);
+        if (is_array($data)) {
+            foreach ($data as $ts) {
+                if (($now - $ts) < $period_seconds) {
+                    $timestamps[] = $ts;
+                }
+            }
+        }
+    }
+    
+    if (count($timestamps) >= $max_requests) {
+        return false;
+    }
+    
+    $timestamps[] = $now;
+    @file_put_contents($file, json_encode($timestamps), LOCK_EX);
+    return true;
+}
+
+/**
  * Check if an email domain is in the blocked list.
  * 
  * @param string $email The full email address
@@ -336,7 +401,7 @@ if (!empty($config['spam_filter_enabled']) && $config['spam_filter_enabled'] ===
     // Generate pseudonymized ID for logging (no PII)
     $submission_id = get_submission_id($email);
     
-    // Helper: silently reject and exit
+    // Helper: silently reject and exit (returns success to bot so they don't retry)
     $silent_reject = function($reason, $detail) use ($submission_id, $form_type, $config) {
         error_log("Spam blocked [{$reason}] | ID: {$submission_id} | Detail: {$detail} | Form: {$form_type}");
         http_response_code(200);
@@ -344,6 +409,52 @@ if (!empty($config['spam_filter_enabled']) && $config['spam_filter_enabled'] ===
         echo json_encode(['success' => true, 'message' => $msg]);
         exit;
     };
+    
+    // ------------------------------------------
+    // LAYER 0: HONEYPOT FIELD CHECK
+    // ------------------------------------------
+    if (!empty($config['honeypot_enabled'])) {
+        $honeypot_fields = $config['honeypot_fields'] ?? ['website_url', 'phone_secondary', 'website'];
+        foreach ($honeypot_fields as $hp) {
+            if (!empty($_POST[$hp])) {
+                $silent_reject('BOT-HONEYPOT', "Field '{$hp}' was filled");
+            }
+        }
+    }
+    
+    // ------------------------------------------
+    // LAYER 0.5: TIME-BASED VALIDATION
+    // ------------------------------------------
+    if (!empty($config['time_validation_enabled'])) {
+        $form_time = isset($_POST['_form_time']) ? (int)$_POST['_form_time'] : 0;
+        $min_seconds = $config['min_submission_time_seconds'] ?? 4;
+        $now = time();
+        
+        if ($form_time <= 0) {
+            $silent_reject('BOT-NO-TIMESTAMP', 'Form submitted without time token');
+        }
+        
+        $elapsed = $now - $form_time;
+        if ($elapsed < $min_seconds) {
+            $silent_reject('BOT-TOO-FAST', "Form submitted in {$elapsed}s (minimum {$min_seconds}s required)");
+        }
+    }
+    
+    // ------------------------------------------
+    // LAYER 0.7: RATE LIMITING PER IP
+    // ------------------------------------------
+    if (!empty($config['rate_limit_enabled'])) {
+        $ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        if (strpos($ip, ',') !== false) {
+            $ip = trim(explode(',', $ip)[0]);
+        }
+        $max = $config['rate_limit_max_submissions'] ?? 3;
+        $period = $config['rate_limit_period_seconds'] ?? 900;
+        
+        if (!check_rate_limit($ip, $max, $period)) {
+            $silent_reject('RATE-LIMIT', "IP {$ip} exceeded {$max} submissions in {$period}s");
+        }
+    }
     
     // ------------------------------------------
     // LAYER 1: BOT PATTERN DETECTION
@@ -364,7 +475,7 @@ if (!empty($config['spam_filter_enabled']) && $config['spam_filter_enabled'] ===
     }
     
     if (!empty($config['block_urls_in_fields'])) {
-        // Check URLs in name, title, logline (but NOT description, where URLs may be legitimate)
+        // Check URLs in name, title, logline
         $url_fields = $raw_name . ' ' . $raw_logline . ' ' . $raw_script_title;
         $url_match = contains_url($url_fields);
         if ($url_match) {
@@ -377,6 +488,18 @@ if (!empty($config['spam_filter_enabled']) && $config['spam_filter_enabled'] ===
             $silent_reject('BOT-CYRILLIC', 'Cyrillic characters in name');
         }
     }
+    
+    if (!empty($config['block_georgian_script'])) {
+        if (contains_georgian($all_raw_content)) {
+            $silent_reject('BOT-GEORGIAN', 'Georgian script detected');
+        }
+    }
+    
+    $spoofed = is_spoofed_domain($email);
+    if ($spoofed !== false) {
+        $silent_reject('BOT-SPOOFED-DOMAIN', "Spoofed or suspicious domain: {$spoofed}");
+    }
+
     
     // Check messaging platform links in ALL fields (including description)
     if (!empty($config['block_messaging_links'])) {

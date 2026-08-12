@@ -3,3 +3,4 @@ deployment:
   tasks:
     - /bin/cp -R * /home/oyqavpki/public_html/
     - /bin/cp .htaccess /home/oyqavpki/public_html/
+    - /bin/sed -i 's|RewriteBase /nar8tive/|RewriteBase /|g' /home/oyqavpki/public_html/.htaccess

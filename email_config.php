@@ -66,27 +66,48 @@ return [
     // SPAM FILTER SETTINGS
     // ==============================================
     
+    // ==============================================
+    // SPAM FILTER SETTINGS
+    // ==============================================
+    
     // Enable/disable spam filtering
     'spam_filter_enabled' => true,
+    
+    // Honeypot field settings (invisible form inputs that trap bots)
+    'honeypot_enabled' => true,
+    'honeypot_fields' => ['website_url', 'phone_secondary', 'website'],
+    
+    // Time-based validation settings (blocks bots submitting under threshold seconds)
+    'time_validation_enabled' => true,
+    'min_submission_time_seconds' => 4, // Minimum seconds a human takes to fill form
+    
+    // Rate limiting settings (per IP address)
+    'rate_limit_enabled' => true,
+    'rate_limit_max_submissions' => 3, // Max allowed submissions
+    'rate_limit_period_seconds' => 900, // Per 15 minutes (900 seconds)
+    
+    // Block non-Latin scripts (Cyrillic, Georgian, etc. where English/French is expected)
+    'block_cyrillic_name' => true,
+    'block_georgian_script' => true, // Blocks Georgian text like "მინდოდა..."
     
     /**
      * MATCHING BEHAVIOR:
      * - All matching is CASE-INSENSITIVE
      * - High confidence keywords use WORD BOUNDARY matching (whole words/phrases only)
-     *   Example: "seo services" matches "need seo services?" but NOT "video services"
      * - Low confidence keywords use SUBSTRING matching (partial matches allowed)
-     *   Example: "website" in low confidence would match "mywebsite" - use carefully
      * 
      * AUTO-REJECT LOGIC (checked in order):
-     * 1. BOT PATTERN DETECTION: HTML tags, URLs, or Cyrillic script in name = auto-reject
-     * 2. BLOCKED EMAIL DOMAINS: Sender email from blocked domain = auto-reject
-     * 3. GIBBERISH DETECTION: Name, title, or logline too short/random = auto-reject
-     * 4. HIGH CONFIDENCE KEYWORDS: ANY match = auto-reject
-     * 5. LOW CONFIDENCE KEYWORDS: matches >= threshold = auto-reject
+     * 1. HONEYPOT: Any data in hidden honeypot fields = auto-reject
+     * 2. TIME-BASED VALIDATION: Submission under 4s or missing timestamp = auto-reject
+     * 3. RATE LIMITING: Exceeding 3 submissions per IP in 15 mins = auto-reject
+     * 4. BOT PATTERN DETECTION: HTML tags, URLs in title/name, Cyrillic/Georgian script = auto-reject
+     * 5. BLOCKED EMAIL DOMAINS & SPOOFING: Disposable/fake/spoofed domain = auto-reject
+     * 6. GIBBERISH DETECTION: Name, title, or logline too short/random = auto-reject
+     * 7. HIGH CONFIDENCE KEYWORDS: ANY match = auto-reject
+     * 8. LOW CONFIDENCE KEYWORDS: matches >= threshold = auto-reject
      */
     
     // Minimum low-confidence keyword matches required to auto-reject
-    // Set higher to be more lenient, lower to be stricter
     'spam_minimum_matches' => 2,
     
     // ==============================================
@@ -99,23 +120,20 @@ return [
     // Block form submissions containing URLs in name/title/logline fields
     'block_urls_in_fields' => true,
     
-    // Block form submissions containing Cyrillic script characters in name
-    // (targets Russian/Ukrainian spam bots; does NOT block Arabic, Chinese, Japanese, etc.)
-    'block_cyrillic_name' => true,
-    
     // Block form submissions containing messaging platform links (Telegram, WhatsApp)
-    // in ANY field including description. Legitimate clients don't include t.me/ or wa.me/ links.
     'block_messaging_links' => true,
     
     // Minimum length for meaningful text fields (script_title, logline, description)
-    // Submissions with ALL text fields shorter than this are likely bots
     'min_meaningful_field_length' => 10,
     
     // ==============================================
     // BLOCKED EMAIL DOMAINS
     // ==============================================
-    // Emails from these domains are always rejected
+    // Emails from these domains (or spoofed variants) are always rejected
     'blocked_email_domains' => [
+        'search-nr8ivafrica.com',
+        'indexhelp.pro',
+        'indexhelp.net',
         'mailbox.in.ua',
         'tempmail.com',
         'throwaway.email',
@@ -141,8 +159,6 @@ return [
     // ==============================================
     // BLOCKED EMAIL PREFIXES
     // ==============================================
-    // Emails starting with these prefixes are always rejected.
-    // Bots commonly use "no.reply", "noreply", "no-reply" style senders.
     'blocked_email_prefixes' => [
         'no.reply',
         'noreply',
@@ -155,6 +171,18 @@ return [
     // HIGH CONFIDENCE: Auto-reject on ANY match (word boundary matching)
     // These are clearly spam-only phrases unlikely in legitimate inquiries
     'spam_keywords' => [
+        // Search index / SEO scam phrases
+        'search index',
+        'search results',
+        'google\'s search index',
+        'google search index',
+        'indexhelp.pro',
+        'indexhelp',
+        'add nr8ivafrica.com now',
+        'display in online search results',
+        'displayed in online search results',
+        'index help',
+
         // SEO-specific spam phrases
         'seo services',
         'seo optimization',
@@ -243,9 +271,7 @@ return [
     ],
     
     // LOW CONFIDENCE: Soft flags - may appear in legitimate project requests
-    // Only auto-reject if matches >= spam_minimum_matches threshold
     'spam_keywords_low_confidence' => [
-        // These could be legitimate project requests
         'website redesign',
         'website audit',
         'free website audit',
@@ -254,8 +280,6 @@ return [
         'improve your website',
         'website optimization',
         'site optimization',
-        
-        // Marketing terms that could be legitimate
         'boost your traffic',
         'increase your traffic',
         'grow your business online',
@@ -268,8 +292,6 @@ return [
         'social media presence',
         'email marketing',
         'email list',
-        
-        // Generic sales phrases
         'special offer',
         'limited time offer',
         'act now',
@@ -277,19 +299,16 @@ return [
         'competitive pricing',
         'free consultation',
         'free quote',
-        
-        // Ads-related (could be legitimate project type)
         'google ads',
         'facebook ads',
         'paid advertising',
         'ad campaign',
-        
-        // Could be a legitimate project request (e.g., "build a feedback form")
         'feedback form',
     ],
     
     // Custom rejection message for spam
-    'spam_rejection_message' => 'Your message could not be sent. Please contact us directly if this is a legitimate inquiry.',
+    'spam_rejection_message' => 'Thank you for your message! We will get back to you soon.',
+
 ];
 
 /*

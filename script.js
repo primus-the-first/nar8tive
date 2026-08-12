@@ -574,6 +574,15 @@
   };
 
   // ==========================================
+  // ANTI-SPAM TIME TOKENS
+  // ==========================================
+  const initAntiSpamTokens = () => {
+    document.querySelectorAll('.form-timestamp-field').forEach((input) => {
+      input.value = Math.floor(Date.now() / 1000).toString();
+    });
+  };
+
+  // ==========================================
   // INITIALIZE ALL FEATURES
   // ==========================================
   const init = () => {
@@ -587,6 +596,7 @@
     counterAnimation();
     parallaxEffect();
     pageLoader();
+    initAntiSpamTokens();
 
     console.log("✨ NR8iv AFRICA interactive features loaded");
   };

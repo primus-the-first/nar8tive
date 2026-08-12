@@ -174,14 +174,288 @@ section::before {
 
 /* Service Cards */
 .service-card {
-  transition: all 0.3s ease;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   height: 100%;
+  border: 1px solid rgba(45, 139, 132, 0.08) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.service-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at top left, rgba(45, 139, 132, 0.06) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 0;
 }
 
 .service-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(45, 139, 132, 0.15), 0 4px 12px rgba(0,0,0,0.08);
+  border-color: rgba(45, 139, 132, 0.25) !important;
 }
+
+.service-card:hover::before {
+  opacity: 1;
+}
+
+.service-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ===================================
+   SERVICE ICON BADGE
+   Fixed-size circle (not oval!) with
+   uiverse-inspired glow ring treatment
+   =================================== */
+.service-icon-badge {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  background: linear-gradient(135deg, rgba(45,139,132,0.12) 0%, rgba(61,165,157,0.06) 100%);
+  border: 1.5px solid rgba(45, 139, 132, 0.22);
+  color: var(--accent);
+  font-size: 1.6rem;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow:
+    0 0 0 0 rgba(45, 139, 132, 0),
+    inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+/* Outer glow ring via pseudo-element */
+.service-icon-badge::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid rgba(45, 139, 132, 0);
+  transition: all 0.4s ease;
+}
+
+.service-card:hover .service-icon-badge,
+.service-icon-badge:hover {
+  background: linear-gradient(135deg, rgba(45,139,132,0.2) 0%, rgba(61,165,157,0.12) 100%);
+  border-color: rgba(45, 139, 132, 0.45);
+  transform: scale(1.1) rotate(-5deg);
+  box-shadow:
+    0 0 20px rgba(45, 139, 132, 0.25),
+    0 0 0 4px rgba(45, 139, 132, 0.08),
+    inset 0 1px 0 rgba(255,255,255,0.7);
+}
+
+.service-card:hover .service-icon-badge::before {
+  border-color: rgba(45, 139, 132, 0.2);
+  inset: -8px;
+}
+
+/* Large icon badge for services.html sidebar visuals */
+.service-icon-badge-lg {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: linear-gradient(135deg, rgba(45,139,132,0.14) 0%, rgba(61,165,157,0.07) 100%);
+  border: 2px solid rgba(45, 139, 132, 0.28);
+  color: var(--accent);
+  font-size: 3rem;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow:
+    0 0 30px rgba(45, 139, 132, 0.12),
+    inset 0 1px 0 rgba(255,255,255,0.5);
+  animation: service-icon-float 4s ease-in-out infinite;
+}
+
+.service-icon-badge-lg::before {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(45, 139, 132, 0.25);
+  animation: service-icon-spin 12s linear infinite;
+}
+
+.service-icon-badge-lg::after {
+  content: "";
+  position: absolute;
+  inset: -16px;
+  border-radius: 50%;
+  border: 1px solid rgba(45, 139, 132, 0.10);
+  animation: service-icon-spin 20s linear infinite reverse;
+}
+
+@keyframes service-icon-float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes service-icon-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Services page sidebar visual block */
+.service-visual-block {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(45,139,132,0.06) 100%) !important;
+  border-radius: 1rem !important;
+  border: 1px solid rgba(45, 139, 132, 0.12);
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.service-visual-block::before {
+  content: "";
+  position: absolute;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(45,139,132,0.12) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* ===================================
+   STAT ICON BADGE (about.html - 64px)
+   =================================== */
+.stat-icon-badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  background: linear-gradient(135deg, rgba(45,139,132,0.12) 0%, rgba(61,165,157,0.06) 100%);
+  border: 1.5px solid rgba(45, 139, 132, 0.2);
+  color: var(--accent);
+  font-size: 1.4rem;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+.stat-icon-badge::before {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  border: 1px solid rgba(45, 139, 132, 0);
+  transition: all 0.4s ease;
+}
+
+.stat-icon-badge:hover,
+.col-md-6:hover .stat-icon-badge,
+.col-lg-3:hover .stat-icon-badge {
+  transform: scale(1.12) rotate(-6deg);
+  background: linear-gradient(135deg, rgba(45,139,132,0.22) 0%, rgba(61,165,157,0.12) 100%);
+  border-color: rgba(45, 139, 132, 0.4);
+  box-shadow:
+    0 0 18px rgba(45, 139, 132, 0.22),
+    0 0 0 4px rgba(45, 139, 132, 0.07),
+    inset 0 1px 0 rgba(255,255,255,0.7);
+}
+
+.col-lg-3:hover .stat-icon-badge::before {
+  border-color: rgba(45, 139, 132, 0.18);
+  inset: -9px;
+}
+
+/* ===================================
+   CONTACT INFO ICON BADGE (50px)
+   =================================== */
+.contact-icon-badge {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  background: linear-gradient(135deg, rgba(45,139,132,0.1) 0%, rgba(61,165,157,0.05) 100%);
+  border: 1.5px solid rgba(45, 139, 132, 0.18);
+  color: var(--accent);
+  font-size: 1.1rem;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.55);
+}
+
+.contact-icon-badge:hover {
+  transform: scale(1.12);
+  background: linear-gradient(135deg, rgba(45,139,132,0.2) 0%, rgba(61,165,157,0.1) 100%);
+  border-color: rgba(45, 139, 132, 0.38);
+  box-shadow:
+    0 0 14px rgba(45, 139, 132, 0.2),
+    inset 0 1px 0 rgba(255,255,255,0.65);
+}
+
+/* ===================================
+   FORM HEADER INLINE ICON
+   (bi-rocket-takeoff, bi-stars in h3)
+   =================================== */
+.form-header-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(45,139,132,0.15) 0%, rgba(61,165,157,0.08) 100%);
+  border: 1px solid rgba(45, 139, 132, 0.2);
+  color: var(--accent);
+  font-size: 1rem;
+  margin-right: 0.5rem;
+  vertical-align: middle;
+  flex-shrink: 0;
+  transition: all 0.35s ease;
+}
+
+/* User-type toggle button icon circle */
+.user-type-btn .btn-content > i {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(45,139,132,0.1);
+  border: 1px solid rgba(45,139,132,0.18);
+  font-size: 1rem;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.user-type-btn.active .btn-content > i {
+  background: rgba(255,255,255,0.18);
+  border-color: rgba(255,255,255,0.3);
+  color: white;
+}
+
+.user-type-btn:hover .btn-content > i {
+  background: rgba(45,139,132,0.18);
+  border-color: rgba(45,139,132,0.35);
+  transform: scale(1.1);
+}
+
 
 /* Portfolio */
 .portfolio-item {
@@ -568,12 +842,16 @@ section::before {
   }
 
   /* Service card icons */
-  .service-card .bi {
-    font-size: 1.5rem !important;
+  .service-icon-badge {
+    width: 60px;
+    height: 60px;
+    font-size: 1.3rem;
   }
 
-  .service-card h3 {
-    font-size: 1.1rem !important;
+  .service-icon-badge-lg {
+    width: 85px;
+    height: 85px;
+    font-size: 2.25rem;
   }
 }
 
